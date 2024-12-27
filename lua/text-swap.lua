@@ -115,7 +115,7 @@ end
 Swap.swap = function()
   local motion = api.nvim_get_mode().mode:match('[vV\022]') and '`<' or ''
   if options.save_pos then vim.b.swap_save_pos = api.nvim_win_get_cursor(0) end
-  vim.o.opfunc = 'v:lua.require("text-swap").opfunc'
+  vim.o.opfunc = "v:lua.require'text-swap'.opfunc"
   return 'g@' .. motion
 end
 
