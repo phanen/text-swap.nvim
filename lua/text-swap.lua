@@ -100,7 +100,6 @@ Swap.opfunc = function(mode)
     vim.b.swap_save_pos = nil
   end
 end
-_G.__swap_opfunc = Swap.opfunc
 
 Swap.cancel = function()
   api.nvim_buf_clear_namespace(0, options.ns, 0, -1)
@@ -114,12 +113,11 @@ Swap.cancel = function()
   vim.b.swap_save_esc = nil
 end
 
-Swap.operator = function()
-  local motion = api.nvim_get_mode().mode:match('[Vv\022]') and '`<' or nil
+Swap.swap = function()
+  local motion = api.nvim_get_mode().mode:match('[vV\022]') and '`<' or ''
   if options.save_pos then vim.b.swap_save_pos = api.nvim_win_get_cursor(0) end
-  vim.o.opfunc = 'v:lua.__swap_opfunc'
-  -- g@ quit visual mode, then `> or '< (idk, but work)
-  api.nvim_feedkeys(('g@%s'):format(motion or ''), 'm', false)
+  vim.o.opfunc = 'v:lua.require("text-swap").opfunc'
+  return 'g@' .. motion
 end
 
 return Swap
