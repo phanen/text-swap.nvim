@@ -51,7 +51,6 @@ end
 ---@return lsp.TextEdit
 local fake_edits = function(linewise)
   local range = { api.nvim_buf_get_mark(0, '['), api.nvim_buf_get_mark(0, ']') }
-  table.sort(range, function(a, b) return a[1] < b[1] or a[1] == b[1] and a[2] <= b[2] end)
   local start_pos, end_pos = range[1], range[2]
   local lines = fn.getregion(fn.getpos "'[", fn.getpos "']", { type = linewise and 'V' or 'v' })
   if linewise then lines[#lines + 1] = '' end
