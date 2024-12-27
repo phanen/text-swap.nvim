@@ -83,18 +83,18 @@ Swap.opfunc = function(mode)
   if options.save_pos then vim.b.swap_save_pos = api.nvim_win_get_cursor(0) end
   if mode == 'block' then error("[SWAP] doesn't works with blockwise selections") end
   local linewise = mode == 'line'
-  local range = fake_edits(linewise) -- make (0, 0)-index range used for lsp apply_text_edits
+  local edit = fake_edits(linewise) -- make (0, 0)-index range used for lsp apply_text_edits
 
-  if vim.b.swap_save_range then
-    local edits = { range, vim.b.swap_save_range }
+  if vim.b.swap_save_edit then
+    local edits = { edit, vim.b.swap_save_edit }
     table.sort(edits, function(a, b) return cmp_range(a.range, b.range) <= 0 end)
     edits[1].newText, edits[2].newText = edits[2].newText, edits[1].newText
     do_swap(edits)
-    vim.b.swap_save_range = nil
+    vim.b.swap_save_edit = nil
     Swap.cancel() -- force cancel in case nothing happened
   else
     do_first_range(linewise)
-    vim.b.swap_save_range = range
+    vim.b.swap_save_edit = edit
   end
 
   if vim.b.swap_save_pos then
@@ -105,7 +105,7 @@ end
 
 Swap.cancel = function()
   api.nvim_buf_clear_namespace(0, options.ns, 0, -1)
-  vim.b.swap_save_range = nil
+  vim.b.swap_save_edit = nil
   if not vim.b.swap_save_esc then return end
   vim.keymap.del('n', '<esc>', { buffer = 0 })
   fn.mapset('n', false, vim.b.swap_save_esc)
