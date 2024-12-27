@@ -28,17 +28,11 @@ end
 --- exchange (sorted) two chunk
 ---@param edits [lsp.TextEdit, lsp.TextEdit]
 local function do_swap(edits)
-  if -- trivial overlap: one include the other (replace larger chunk with smaller chunk)
-    edits[1].range['end'].line > edits[2].range['end'].line
-    or edits[1].range['end'].line == edits[2].range['end'].line
-      and edits[1].range['end'].character >= edits[2].range['end'].character
-  then
+  -- trivial overlap: one include the other (replace larger chunk with smaller chunk)
+  if cmp_pos(edits[1].range['end'], edits[2].range['end']) >= 0 then
     edits = { edits[2] }
-  elseif -- otherwise, for non-trivial overlap: meaningless to swap
-    edits[1].range['end'].line > edits[2].range.start.line
-    or edits[1].range['end'].line == edits[2].range.start.line
-      and edits[1].range['end'].character > edits[2].range.start.character
-  then
+  -- otherwise, for non-trivial overlap: meaningless to swap
+  elseif cmp_pos(edits[1].range['end'], edits[2].range.start) > 0 then
     edits = {}
   end
   lsp.util.apply_text_edits(edits, vim._resolve_bufnr(0), 'utf-16')
