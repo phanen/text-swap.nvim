@@ -71,6 +71,7 @@ end
 
 ---@param mode "char" | "line" | "block"
 Swap.opfunc = function(mode)
+  if options.save_pos then vim.b.swap_save_pos = api.nvim_win_get_cursor(0) end
   if mode == 'block' then error("[SWAP] doesn't works with blockwise selections") end
   local linewise = mode == 'line'
   local range = fake_edits(linewise) -- make (0, 0)-index range used for lsp apply_text_edits
@@ -114,7 +115,6 @@ end
 
 Swap.swap = function()
   local motion = api.nvim_get_mode().mode:match('[vV\022]') and '`<' or ''
-  if options.save_pos then vim.b.swap_save_pos = api.nvim_win_get_cursor(0) end
   vim.o.opfunc = "v:lua.require'text-swap'.opfunc"
   return 'g@' .. motion
 end
