@@ -1,14 +1,29 @@
 local Swap = {}
 
-local fn, api = vim.fn, vim.api
+local fn, api, lsp = vim.fn, vim.api, vim.lsp
 
 local options = {
   ns = api.nvim_create_namespace('swap'),
-  hl = { name = 'SwapRegion', link = 'IncSearch' },
+  hl = { name = 'SwapRegion', link = 'Search' },
   save_pos = true, -- restore cursor position
 }
 
-api.nvim_set_hl(0, options.hl.name, { link = options.hl.link })
+api.nvim_set_hl(0, options.hl.name, { link = options.hl.link, default = true })
+
+---@param a lsp.Position
+---@param b lsp.Position
+local cmp_pos = function(a, b)
+  if a.line == b.line and a.character == b.character then return 0 end
+  if a.line < b.line or a.line == b.line and a.character < b.character then return -1 end
+  return 1
+end
+
+---@param a lsp.Range
+---@param b lsp.Range
+local cmp_range = function(a, b)
+  local rv = cmp_pos(a.start, b.start)
+  return rv ~= 0 and rv or cmp_pos(a.start, b.start)
+end
 
 --- exchange (sorted) two chunk
 ---@param edits [lsp.TextEdit, lsp.TextEdit]
@@ -26,7 +41,7 @@ local function do_swap(edits)
   then
     edits = {}
   end
-  vim.lsp.util.apply_text_edits(edits, vim._resolve_bufnr(0), 'utf-16')
+  lsp.util.apply_text_edits(edits, vim._resolve_bufnr(0), 'utf-16')
 end
 
 --- save and hl the first swap chunk of text
@@ -78,14 +93,7 @@ Swap.opfunc = function(mode)
 
   if vim.b.swap_save_range then
     local edits = { range, vim.b.swap_save_range }
-    table.sort(
-      edits,
-      function(a, b)
-        return a.range.start.line < b.range.start.line
-          or a.range.start.line == b.range.start.line
-            and a.range.start.character <= b.range.start.character
-      end
-    )
+    table.sort(edits, function(a, b) return cmp_range(a.range, b.range) <= 0 end)
     edits[1].newText, edits[2].newText = edits[2].newText, edits[1].newText
     do_swap(edits)
     vim.b.swap_save_range = nil
