@@ -37,7 +37,7 @@ local do_first_range = function(linewise)
     inclusive = true,
   })
   vim.b.swap_save_esc = fn.maparg('<esc>', 'n', false, true)
-  vim.keymap.set('n', '<esc>', Swap.cancel, {})
+  vim.keymap.set('n', '<esc>', Swap.cancel, { buffer = 0 })
   api.nvim_buf_attach(0, false, {
     on_lines = function()
       Swap.cancel()
@@ -105,11 +105,8 @@ Swap.cancel = function()
   api.nvim_buf_clear_namespace(0, options.ns, 0, -1)
   vim.b.swap_save_range = nil
   if not vim.b.swap_save_esc then return end
-  if vim.tbl_isempty(vim.b.swap_save_esc) then
-    vim.keymap.set('n', '<esc>', '<nop>', {})
-  else
-    fn.mapset('n', false, vim.b.swap_save_esc)
-  end
+  vim.keymap.del('n', '<esc>', { buffer = 0 })
+  fn.mapset('n', false, vim.b.swap_save_esc)
   vim.b.swap_save_esc = nil
 end
 
