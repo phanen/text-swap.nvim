@@ -72,8 +72,10 @@ local fake_edits = function(linewise)
       },
       ['end'] = {
         line = linewise and end_pos[1] or end_pos[1] - 1,
-        character = linewise and 0
-          or end_pos[2] + vim.str_utf_end(api.nvim_get_current_line(), end_pos[2] + 1) + 1,
+        character = linewise and 0 or end_pos[2] + vim.str_utf_end(
+          api.nvim_buf_get_lines(0, end_pos[1] - 1, end_pos[1], true)[1],
+          end_pos[2] + 1
+        ) + 1,
       },
     },
   }

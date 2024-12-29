@@ -76,6 +76,20 @@ describe('test', function()
       }
     end
   )
+  it(
+    'should not index out of range when force charwise',
+    function()
+      SwapTest {
+        'aaaaaaaaa',
+        '我我我我我',
+        'bbbbbbbbbb',
+      }:run_keys('$gsvjjgsvj'):expect {
+        'aaaaaaaa我',
+        'bbbbbbbba',
+        '我我我我bb',
+      }
+    end
+  )
 end)
 
 -- don't trust anything
