@@ -76,6 +76,20 @@ SwapTest.describe('test', function()
       }
     end
   )
+  it(
+    'should not index out of range when force charwise',
+    function()
+      SwapTest {
+        'aaaaaaaaa',
+        '我我我我我',
+        'bbbbbbbbbb',
+      }:run_keys('$gsvjjgsvj'):expect {
+        'aaaaaaaa我',
+        'bbbbbbbba',
+        '我我我我bb',
+      }
+    end
+  )
 end)
 
 -- don't trust anything
@@ -101,3 +115,10 @@ describe('test helper', function()
     end
   end)
 end)
+
+-- 反哦eee我 车反xxv了我车反哦产巍峨佛
+-- 恩恩解恩 恩恩解沃 e
+-- oweifj ejfowiefj wfwef
+-- ewifjoiew
+-- 恩解weij wiefj
+-- 恩 恩解g发
