@@ -1,4 +1,4 @@
-local Swap = {}
+﻿local Swap = {}
 
 local fn, api, lsp = vim.fn, vim.api, vim.lsp
 
@@ -35,7 +35,7 @@ local function do_swap(edits)
   elseif cmp_pos(edits[1].range['end'], edits[2].range.start) > 0 then
     edits = {}
   end
-  lsp.util.apply_text_edits(edits, vim._resolve_bufnr(0), 'utf-16')
+  lsp.util.apply_text_edits(edits, vim._resolve_bufnr(0), 'utf-8')
 end
 
 --- save and hl the first swap chunk of text
@@ -72,7 +72,8 @@ local fake_edits = function(linewise)
       },
       ['end'] = {
         line = linewise and end_pos[1] or end_pos[1] - 1,
-        character = linewise and 0 or end_pos[2] + 1,
+        character = linewise and 0
+          or end_pos[2] + vim.str_utf_end(api.nvim_get_current_line(), end_pos[2] + 1) + 1,
       },
     },
   }
