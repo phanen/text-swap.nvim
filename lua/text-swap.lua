@@ -1,4 +1,4 @@
-﻿local Swap = {}
+local Swap = {}
 
 local fn, api, lsp = vim.fn, vim.api, vim.lsp
 
