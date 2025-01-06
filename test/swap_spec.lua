@@ -1,4 +1,4 @@
-﻿package.path = table.concat({ package.path, './lua/?.lua' }, ';')
+package.path = table.concat({ package.path, './lua/?.lua' }, ';')
 
 local api = vim.api
 
