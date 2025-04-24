@@ -8,6 +8,7 @@ local u = {
 local options = {
   ns = api.nvim_create_namespace('two'),
   hl = { name = 'TwoRegion', link = 'Search' },
+  diff = { side_by_side = true },
 }
 
 api.nvim_set_hl(0, options.hl.name, { link = options.hl.link, default = true })
@@ -26,7 +27,7 @@ M.state = {
 ---@param mode two.mode
 ---@return boolean, two.pos, two.pos
 local get_context = function(mode)
-  if mode == 'block' then error("[SWAP] doesn't works with blockwise selections") end
+  if mode == 'block' then error("[TWO] doesn't works with blockwise selections") end
   local linewise = mode == 'line'
   local start_pos, end_pos = api.nvim_buf_get_mark(0, '['), api.nvim_buf_get_mark(0, ']')
   return linewise, start_pos, end_pos
@@ -141,6 +142,22 @@ M.handlers.diff = function(linewise, _, _)
     return
   end
 
+  if options.diff.side_by_side then
+    local ft = vim.bo[buf].ft
+    local create_buf = function(lines0)
+      local buf0 = api.nvim_create_buf(false, true)
+      api.nvim_buf_set_lines(buf0, 0, -1, false, lines0)
+      vim.bo[buf0].ft = ft
+      vim.bo[buf0].bufhidden = 'wipe'
+      return buf0
+    end
+    local buf1 = create_buf(lines)
+    local buf2 = create_buf(vim.g.diff_save)
+    vim.cmd(([[tabnew | b %s | vert sb %s | windo diffthis]]):format(buf1, buf2))
+    diff_cancel()
+    return
+  end
+
   local newbuf = api.nvim_create_buf(false, true)
   local text = vim.split(
     vim.diff(table.concat(lines, '\n'), table.concat(vim.g.diff_save, '\n')) --[[@as string]],
@@ -155,10 +172,9 @@ M.handlers.diff = function(linewise, _, _)
     row = math.floor((vim.o.lines - vim.o.lines * 0.8) / 2),
     col = math.floor((vim.o.columns - vim.o.columns * 0.8) / 2),
     style = 'minimal',
-    border = 'rounded',
+    border = _G.border,
   })
   diff_cancel()
-  vim.g.diff_save = nil
 end
 
 ---@param mode two.mode
