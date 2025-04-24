@@ -32,8 +32,8 @@ local get_context = function(mode)
   return linewise, start_pos, end_pos
 end
 
-M.cancel = function()
-  api.nvim_buf_clear_namespace(0, options.ns, 0, -1)
+M.cancel = function(buf)
+  api.nvim_buf_clear_namespace(buf or 0, options.ns, 0, -1)
   u.key.pop(options.ns, 'n', '<esc>')
 end
 
@@ -69,8 +69,9 @@ M.handlers.swap = function(linewise, start_pos, end_pos)
     return rv ~= 0 and rv or cmp_pos(a.start, b.start)
   end
 
+  local buf = api.nvim_get_current_buf()
   local swap_cancel = function()
-    M.cancel()
+    M.cancel(buf)
     vim.b.swap_save = nil
     return true
   end
@@ -125,8 +126,9 @@ M.handlers.swap = function(linewise, start_pos, end_pos)
 end
 
 M.handlers.diff = function(linewise, _, _)
+  local buf = api.nvim_get_current_buf()
   local diff_cancel = function()
-    M.cancel()
+    M.cancel(buf)
     vim.g.diff_save = nil
     return true
   end
@@ -139,14 +141,14 @@ M.handlers.diff = function(linewise, _, _)
     return
   end
 
-  local buf = api.nvim_create_buf(false, true)
+  local newbuf = api.nvim_create_buf(false, true)
   local text = vim.split(
     vim.diff(table.concat(lines, '\n'), table.concat(vim.g.diff_save, '\n')) --[[@as string]],
     '\n'
   )
-  api.nvim_buf_set_lines(buf, 0, -1, false, text)
-  vim.bo[buf].ft = 'diff'
-  api.nvim_open_win(buf, true, {
+  api.nvim_buf_set_lines(newbuf, 0, -1, false, text)
+  vim.bo[newbuf].ft = 'diff'
+  api.nvim_open_win(newbuf, true, {
     relative = 'win',
     width = math.floor(vim.o.columns * 0.8),
     height = math.floor(vim.o.lines * 0.8),
@@ -155,13 +157,11 @@ M.handlers.diff = function(linewise, _, _)
     style = 'minimal',
     border = 'rounded',
   })
-  -- do_first_range(linewise)
-  -- vim.b.diff_save = edit
-  M.cancel()
+  diff_cancel()
   vim.g.diff_save = nil
 end
 
----@param mode "char" | "line" | "block"
+---@param mode two.mode
 M.opfunc = function(mode)
   local handler = M.handlers[M.state.op]
   if not handler then return end
