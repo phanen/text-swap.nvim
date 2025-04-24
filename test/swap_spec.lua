@@ -1,4 +1,6 @@
-package.path = table.concat({ package.path, './lua/?.lua' }, ';')
+if not package.path:match(vim.pesc('./lua/?.lua') .. ';?') then
+  package.path = table.concat({ package.path, './lua/?.lua' }, ';')
+end
 
 local api = vim.api
 
@@ -12,7 +14,7 @@ local SwapTest = {
     api.nvim_win_set_buf(0, self.buf)
     api.nvim_buf_set_lines(self.buf, 0, -1, false, lines)
 
-    vim.keymap.set({ 'n', 'x' }, 'gs', require('text-swap').swap, { expr = true })
+    vim.keymap.set({ 'n', 'x' }, 'gs', require('two').swap, { expr = true })
   end,
   run_keys = function(self, keys)
     keys = type(keys) == 'table' and table.concat(keys) or keys
