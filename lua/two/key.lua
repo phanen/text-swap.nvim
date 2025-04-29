@@ -1,3 +1,7 @@
+---@diagnostic disable: duplicate-doc-field, duplicate-set-field, duplicate-doc-alias
+
+---START INJECT key.lua
+
 local M = {}
 
 ---@alias key.dict_raw table<string, any>
@@ -14,7 +18,6 @@ M.stks = stks
 ---@param dict key.dict_raw
 ---@return vim.api.keyset.keymap, string, boolean, boolean
 local convert_dict = function(dict)
-  -- dict = vim.deepcopy(dict)
   local rhs, buffer
   dict.abbr = nil
   dict.lhs = nil
@@ -37,7 +40,6 @@ local convert_dict = function(dict)
   return dict, rhs, mapped, buffer
 end
 
--- handler global key only? single mode?
 ---@param ns integer
 ---@param mode string
 ---@param lhs string
@@ -51,7 +53,6 @@ local push = function(ns, mode, lhs, rhs, opts)
   stk[#stk + 1] = { ns, old_rhs, mapped and old_opts or nil, buffer }
   stks[mode][lhs] = stk
 
-  -- don't care about the buffer-local mappings now
   if buffer then -- use it in a nvim_buf_call
     api.nvim_buf_del_keymap(0, mode, lhs)
   end
@@ -82,7 +83,6 @@ local pop = function(ns, mode, lhs)
   stk[#stk] = nil
   local _ns, rhs, opts, buffer = unpack(top, 1, 4)
 
-  -- guard against twice pop...
   if _ns ~= ns then return end
 
   if not opts then

@@ -1,9 +1,13 @@
-local M = {}
-
+---@diagnostic disable: duplicate-doc-field, duplicate-set-field, duplicate-doc-alias, unused-local, undefined-field
 local fn, api, lsp = vim.fn, vim.api, vim.lsp
+
 local u = {
   key = require('two.key'),
 }
+
+---START INJECT two.lua
+
+local M = {}
 
 local options = {
   ns = api.nvim_create_namespace('two'),
@@ -77,13 +81,10 @@ M.handlers.swap = function(linewise, start_pos, end_pos)
     return true
   end
 
-  --- exchange (sorted) two chunk
   ---@param edits [lsp.TextEdit, lsp.TextEdit]
   local function do_swap(edits)
-    -- trivial overlap: one include the other (replace larger chunk with smaller chunk)
     if cmp_pos(edits[1].range['end'], edits[2].range['end']) >= 0 then
       edits = { edits[2] }
-    -- otherwise, for non-trivial overlap: meaningless to swap
     elseif cmp_pos(edits[1].range['end'], edits[2].range.start) > 0 then
       edits = {}
     end
@@ -92,7 +93,6 @@ M.handlers.swap = function(linewise, start_pos, end_pos)
   end
 
   ---@type lsp.TextEdit
-  -- make (0, 0)-index range used for lsp apply_text_edits
   local edit = (function()
     local lines = fn.getregion(fn.getpos "'[", fn.getpos "']", { type = linewise and 'V' or 'v' })
     if linewise then lines[#lines + 1] = '' end
@@ -185,17 +185,14 @@ M.opfunc = function(mode)
   handler(linewise, start_pos, end_pos)
 end
 
-M.global_name = '_' .. fn.rand() .. '_TWO'
-_G[M.global_name] = M.opfunc
+_G._U_TWO_OPFUNC = M.opfunc
 
 ---@param op two.op
 local with_op = function(op)
   local motion = api.nvim_get_mode().mode:match('[vV\022]') and '`<' or ''
   M.state.op = op
   M.state.count = (M.state.count or 0) + 1
-  local opfunc = ('v:lua._G.' .. M.global_name)
-  if vim.o.opfunc ~= opfunc then vim.o.opfunc = opfunc end
-  -- g@ quit visual mode, then `> or '< (idk, but work)
+  if vim.o.opfunc ~= 'v:lua._U_TWO_OPFUNC' then vim.o.opfunc = 'v:lua._U_TWO_OPFUNC' end
   return 'g@' .. motion
 end
 
