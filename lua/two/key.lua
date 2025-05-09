@@ -69,6 +69,7 @@ local push = function(ns, mode, lhs, rhs, opts)
   end
 
   ---@cast rhs string
+  opts.nowait = true
   api.nvim_set_keymap(mode, lhs, rhs, opts)
 end
 
