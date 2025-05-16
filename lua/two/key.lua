@@ -31,7 +31,6 @@ local convert_dict = function(dict)
   dict.sid = nil
   buffer = dict.buffer == 1
   dict.buffer = nil
-  if dict.expr == 1 then dict.replace_keycodes = 0 end
   local mapped = getmetatable(dict) ~= vim._empty_dict_mt
   if mapped then
     rhs = dict.rhs or ''
